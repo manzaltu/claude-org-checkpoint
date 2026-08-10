@@ -1,0 +1,5 @@
+{
+  "name": "claude-org-checkpoint",
+  "description": "Resumable task checkpoints saved as Org documents",
+  "version": "1.0.0"
+}

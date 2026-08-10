@@ -1,0 +1,88 @@
+#+title: claude-org-checkpoint
+
+Resumable task checkpoints as [[https://orgmode.org/][Org]] documents for [[https://www.anthropic.com/claude-code][Claude Code]].
+
+Long-running work — designing a solution, researching a topic, triaging PRs, planning improvements — normally dies with the session that produced it. This plugin saves the conclusions as plain org files you own, outside the repository, so a later session (or you, in Emacs) can pick the task back up with full context.
+
+* How it works
+
+#+begin_example
+  /checkpoint [topic]                     /checkpoint-resume [topic]
+        │                                       │
+        ▼                                       ▼
+  distill the discussion's              list this project's
+  conclusions                           checkpoint documents
+        │                                       │
+        ▼                                       ▼
+  create or update                      read the document,
+  <base>/<project>/<topic>.org  ──────> verify its recorded world
+  (update, never duplicate)             state (read-only), brief
+                                        the user, await direction
+#+end_example
+
+~<base>~ is =~/org/checkpoints= by default (see [[#configuration][Configuration]]); ~<project>~ is the project's absolute path flattened into a single directory name (=/home/user/projects/my-app= → =-home-user-projects-my-app=), so equally-named projects in different locations never collide. Documents are written for a reader with zero session context and capture the whole task state: where it is going (goal), what is known (conclusions with their rationale — rejected alternatives included — findings, open questions), what has been done (work applied, dead ends, next steps), and how to pick it up (current status, world state, what to re-verify before trusting any of it).
+
+* The document format
+
+Everything is plain org — no front matter, no custom markup scheme:
+
+#+begin_src org
+  #+title: Cache layer redesign
+  #+filetags: :checkpoint:my_app:
+  #+date: [2026-08-09 Sun]
+
+  * TODO Cache layer redesign
+  :PROPERTIES:
+  :CATEGORY: my-app
+  :PROJECT_ROOT: /home/user/projects/my-app
+  :COMMIT: 1a2b3c4
+  :MODIFIED: [2026-08-09 Sun 14:05]
+  :END:
+
+  Where the task stands right now — refreshed on every save.
+
+  ** Goal
+  ** Conclusions
+  ** Findings
+  ** Open questions
+  ** Work done
+  ** World state
+  ** Next steps
+  *** TODO First actionable step
+  ** Resume notes
+#+end_src
+
+The sections are a vocabulary, not a form: a document carries only the ones with content (the status paragraph, ~Goal~, and ~Next steps~ always exist), so a research doc leans on Findings while a mid-implementation doc leans on Work done and World state.
+
+- Task status is the root heading's standard ~TODO~/~DONE~ keyword.
+- Metadata is a property drawer: ~:CATEGORY:~ (org-agenda grouping), ~:PROJECT_ROOT:~, ~:COMMIT:~ (HEAD at last save), ~:MODIFIED:~.
+- Next steps are real org ~TODO~ subheadings — add a document to ~org-agenda-files~ and they show up in your agenda.
+- Code and PR references are org links (=[[file:...::123]]=, =[[https://...][PR #42]]=).
+
+The files are yours: edit them freely in Emacs — updates preserve your edits and merge around them.
+
+* Configuration
+:PROPERTIES:
+:CUSTOM_ID: configuration
+:END:
+
+- ~CLAUDE_CHECKPOINT_DIR~ — base directory for all documents. Default: =~/org/checkpoints=. Documents are never written inside a project repository.
+
+* Install
+
+#+begin_src sh
+  /plugin marketplace add manzaltu/claude-org-checkpoint
+  /plugin install claude-org-checkpoint@claude-org-checkpoint
+#+end_src
+
+* Local Development
+
+#+begin_src sh
+  claude --plugin-dir path/to/claude-org-checkpoint
+#+end_src
+
+* License
+
+Copyright (c) 2026 Yoav Orot. All rights reserved.
+
+Licensed under the [[file:LICENSE][GNU General Public License v3.0 or later]].
